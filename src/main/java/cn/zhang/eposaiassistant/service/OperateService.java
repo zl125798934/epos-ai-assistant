@@ -88,9 +88,9 @@ public class OperateService {
 	private void initData() {
 		List<String> applicant = List.of("张三", "李四", "王五");
 
-		for (int i = 0; i < 5; i++) {
+		for (int i = 0; i < 3; i++) {
 			Policy policy = new Policy();
-			policy.setPolicyNo("8000" + i);
+			policy.setPolicyNo("80001" + i);
 			policy.setApplicant(applicant.get(i % 3));
 			policy.setPurchaseDate(LocalDate.now().minusDays(i));
 			policy.setPolicyStatus(PolicyStatusEnum.NORMAL.getDescription());
@@ -101,7 +101,7 @@ public class OperateService {
 		pos.setAcceptNo(100);
 		pos.setApplicant("张三");
 		pos.setPolicyNo("80001");
-		pos.setPosType(PosTypeEnum.PROBATIONARY_SURRENDER.name());
+		pos.setPosType(PosTypeEnum.PROBATIONARY_SURRENDER.getDescription());
     	pos.setPosStatus(PosStatusEnum.ACCEPTED.getDescription());
 		posList.add(pos);
 	}

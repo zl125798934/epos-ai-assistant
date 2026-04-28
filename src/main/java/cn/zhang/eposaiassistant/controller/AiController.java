@@ -22,6 +22,12 @@ public class AiController {
 	@Resource
 	private AiChatService aiChatService;
 
+	/**
+	 * 聊天
+	 * @param memoryId
+	 * @param message
+	 * @return
+	 */
 	@GetMapping("/chat")
 	public Flux<ServerSentEvent<String>> chat(int memoryId, String message) {
 		return aiChatService.chatStream(memoryId, message)
