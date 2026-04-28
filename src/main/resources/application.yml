@@ -1,0 +1,19 @@
+spring:
+  application:
+    name:epos-ai-assistant
+
+server:
+  port: 8080
+
+langchain4j:
+  community:
+    dashscope:
+      chat-model:
+        model-name: qwen-plus
+        api-key: sk-e55e83a1fb7047b8abcd15c1a636c77d
+      embedding-model:
+        model-name: text-embedding-v4
+        api-key: sk-e55e83a1fb7047b8abcd15c1a636c77d
+      streaming-chat-model:
+        model-name: qwen-plus
+        api-key: sk-e55e83a1fb7047b8abcd15c1a636c77d
