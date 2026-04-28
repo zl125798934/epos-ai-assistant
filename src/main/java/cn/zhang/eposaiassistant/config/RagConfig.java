@@ -29,6 +29,22 @@ public class RagConfig {
     @Bean
     public ContentRetriever contentRetriever() {
         // ------ RAG ------
+//        initRag();
+
+        // 4. 自定义内容查询器
+        ContentRetriever contentRetriever = EmbeddingStoreContentRetriever.builder()
+                .embeddingStore(embeddingStore)
+                .embeddingModel(qwenEmbeddingModel)
+                .maxResults(5) // 最多 5 个检索结果
+                .minScore(0.75) // 过滤掉分数小于 0.75 的结果
+                .build();
+        return contentRetriever;
+    }
+
+    /**
+     * 初始化 RAG
+     */
+    private void initRag() {
         // 1. 加载文档
         List<Document> documents = FileSystemDocumentLoader.loadDocuments("src/main/resources/docs");
         // 2. 文档切割：将每个文档按每段进行分割，最大 500 字符，每次重叠最多 100 个字符
@@ -47,13 +63,5 @@ public class RagConfig {
                 .build();
         // 加载文档
         ingestor.ingest(documents);
-        // 4. 自定义内容查询器
-        ContentRetriever contentRetriever = EmbeddingStoreContentRetriever.builder()
-                .embeddingStore(embeddingStore)
-                .embeddingModel(qwenEmbeddingModel)
-                .maxResults(5) // 最多 5 个检索结果
-                .minScore(0.75) // 过滤掉分数小于 0.75 的结果
-                .build();
-        return contentRetriever;
     }
 }
