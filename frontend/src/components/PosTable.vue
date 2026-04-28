@@ -11,12 +11,15 @@
       <el-table-column prop="posType" label="保全类型" width="120" />
       <el-table-column label="保全状态" width="120">
         <template #default="{ row }">
-          <span>{{ getStatusIcon(row.posStatus) }} {{ row.posStatus }}</span>
+          <el-tag :type="getStatusType(row.posStatus)" size="small">
+            {{ row.posStatus }}
+          </el-tag>
         </template>
       </el-table-column>
       <el-table-column label="审核结果" width="120">
         <template #default="{ row }">
-          <span>{{ getAuditIcon(row.auditResult) }} {{ row.auditResult || '-' }}</span>
+          <span v-if="row.auditResult">{{ getAuditIcon(row.auditResult) }} {{ row.auditResult }}</span>
+          <span v-else>-</span>
         </template>
       </el-table-column>
     </el-table>
@@ -44,20 +47,31 @@ const loadData = async () => {
 
 const getStatusIcon = (status) => {
   const statusMap = {
-    '已受理': '️',
-    '处理中': '️',
+    '已受理': '',
+    '处理中': '⏳',
     '处理成功': '✅',
     '处理失败': '❌',
-    '已取消': '️'
+    '已取消': '🚫'
   }
   return statusMap[status] || ''
+}
+
+const getStatusType = (status) => {
+  const typeMap = {
+    '已受理': 'warning',
+    '处理中': '',
+    '处理成功': 'success',
+    '处理失败': 'danger',
+    '已取消': 'info'
+  }
+  return typeMap[status] || 'info'
 }
 
 const getAuditIcon = (result) => {
   if (!result) return ''
   const auditMap = {
     '通过': '✅',
-    '拒绝': ''
+    '拒绝': '❌'
   }
   return auditMap[result] || ''
 }
