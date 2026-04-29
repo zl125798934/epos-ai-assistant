@@ -33,7 +33,10 @@ public class AiController {
 		return aiChatService.chatStream(memoryId, message)
 				.map(chunk -> ServerSentEvent.<String>builder()
 						.data(chunk)
-						.build());
+						.build())
+				.concatWith(Flux.just(ServerSentEvent.<String>builder()
+						.data("[DONE]")
+						.build()));
 	}
 
 }

@@ -24,8 +24,10 @@ public class OperateService {
 	 * @return
 	 */
 	public List<Policy> getPols(){
-		
-		return policyList;
+		return policyList
+				.stream()
+				.sorted((p1, p2) -> p2.getPolicyNo().compareTo(p1.getPolicyNo()))
+				.toList();
 	}
 
 	/**
@@ -42,7 +44,9 @@ public class OperateService {
 	 * @return
 	 */
 	public List<Pos> getPos(){
-		return posList;
+		return posList.stream()
+				.sorted((p1, p2) -> Integer.compare(p2.getAcceptNo(), p1.getAcceptNo()))
+				.toList();
 	}
 
 	/**

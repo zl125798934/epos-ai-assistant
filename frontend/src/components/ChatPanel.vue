@@ -35,20 +35,34 @@
 </template>
 
 <script setup>
-import { ref, nextTick, onMounted } from 'vue'
+import { ref, nextTick, onMounted, watch } from 'vue'
 import { chatStream } from '../api/ai'
 
-const emit = defineEmits(['streamDone'])
+const props = defineProps({
+  sessionId: {
+    type: String,
+    default: null
+  },
+  messages: {
+    type: Array,
+    default: () => []
+  },
+  memoryId: {
+    type: Number,
+    default: null
+  }
+})
 
-const messages = ref([
-  { role: 'ai', content: '你好，我是保全智能助手小智' }
-])
+const emit = defineEmits(['streamDone', 'updateMessages'])
 
 const inputMessage = ref('')
 const isStreaming = ref(false)
 const messagesRef = ref(null)
-const memoryId = ref(Math.floor(Math.random() * 1000000))
 let currentEventSource = null
+
+watch(() => props.sessionId, () => {
+  scrollToBottom()
+})
 
 const scrollToBottom = async () => {
   await nextTick()
@@ -61,20 +75,23 @@ const sendMessage = async () => {
   if (!inputMessage.value.trim() || isStreaming.value) return
   
   const userMessage = inputMessage.value.trim()
-  messages.value.push({ role: 'user', content: userMessage })
+  const newMessages = [...props.messages, { role: 'user', content: userMessage }]
   inputMessage.value = ''
   
-  const aiMessageIndex = messages.value.length
-  messages.value.push({ role: 'ai', content: '' })
+  const aiMessageIndex = newMessages.length
+  newMessages.push({ role: 'ai', content: '' })
+  
+  emit('updateMessages', newMessages)
   
   isStreaming.value = true
   await scrollToBottom()
   
   currentEventSource = chatStream(
-    memoryId.value,
+    props.memoryId,
     userMessage,
     (chunk) => {
-      messages.value[aiMessageIndex].content += chunk
+      newMessages[aiMessageIndex].content += chunk
+      emit('updateMessages', [...newMessages])
       scrollToBottom()
     },
     () => {
@@ -86,7 +103,8 @@ const sendMessage = async () => {
       console.error('SSE Error:', error)
       isStreaming.value = false
       currentEventSource = null
-      messages.value[aiMessageIndex].content += '\n[连接出错，请重试]'
+      newMessages[aiMessageIndex].content += '\n[连接出错，请重试]'
+      emit('updateMessages', [...newMessages])
       emit('streamDone')
     }
   )
@@ -102,9 +120,7 @@ onMounted(() => {
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: #f5f7fa;
-  border-radius: 20px;
-  overflow: hidden;
+  background: #ffffff;
 }
 
 .chat-header {
@@ -122,6 +138,7 @@ onMounted(() => {
   flex: 1;
   overflow-y: auto;
   padding: 20px;
+  background: #f5f7fa;
 }
 
 .message-item {

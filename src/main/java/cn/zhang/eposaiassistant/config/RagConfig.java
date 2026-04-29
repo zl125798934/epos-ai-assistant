@@ -29,7 +29,7 @@ public class RagConfig {
     @Bean
     public ContentRetriever contentRetriever() {
         // ------ RAG ------
-//        initRag();
+        initRag();
 
         // 4. 自定义内容查询器
         ContentRetriever contentRetriever = EmbeddingStoreContentRetriever.builder()
