@@ -1,8 +1,10 @@
 package cn.zhang.eposaiassistant.controller;
 
 
+import cn.zhang.eposaiassistant.config.AiChatServiceFactory;
 import cn.zhang.eposaiassistant.service.AiChatService;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,30 +13,35 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 
 /**
- * @Author: zhanglun @Date: 2026/4/28 16:26 @Description:
+ * AI 对话控制器
+ * 支持意图识别 + 路由分发
  */
+@Slf4j
 @CrossOrigin
 @RestController
 @RequestMapping("/api/ai")
 public class AiController {
 
-
 	@Resource
-	private AiChatService aiChatService;
+	private AiChatServiceFactory aiChatServiceFactory;
 
 	/**
-	 * 聊天
-	 * @param memoryId
-	 * @param message
-	 * @return
+	 * 聊天接口（带意图识别路由）
+	 * @param memoryId 会话记忆ID
+	 * @param message 用户消息
+	 * @return SSE 流式响应
 	 */
 	@GetMapping("/chat")
 	public Flux<ServerSentEvent<String>> chat(int memoryId, String message) {
-		return aiChatService.chatStream(memoryId, message)
-				.map(chunk -> ServerSentEvent.<String>builder()
+		
+		// 意图识别
+		AiChatService targetService = aiChatServiceFactory.getTargetAiService(message);
+
+		return targetService.chatStream(memoryId, message)
+						.map(chunk -> ServerSentEvent.<String>builder()
 						.data(chunk)
 						.build())
-				.concatWith(Flux.just(ServerSentEvent.<String>builder()
+						.concatWith(Flux.just(ServerSentEvent.<String>builder()
 						.data("[DONE]")
 						.build()));
 	}
