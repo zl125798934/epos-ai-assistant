@@ -1,4 +1,4 @@
-package cn.zhang.eposaiassistant.service;
+package cn.zhang.eposaiassistant.data;
 
 /**
  * 用户意图枚举

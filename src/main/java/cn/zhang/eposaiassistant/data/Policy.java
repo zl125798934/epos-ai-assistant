@@ -21,4 +21,6 @@ public class Policy {
 	private String policyStatus;
 	// 变更原因
 	private String changeReason;
+	// 手机号
+	private String phoneNo;
 }

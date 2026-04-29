@@ -79,4 +79,21 @@ public class EposAiTool {
 		operateService.updatePostStatus(pos.getAcceptNo(), "已取消");
 		return String.format("您的保单%s，保全受理号#%d，取消成功！", pos.getPolicyNo(), pos.getAcceptNo());
 	}
+
+	@Tool(
+			name = "apply_phone_change",
+			value = "为用户办理手机号变更申请。需要提供投保人姓名、保单号和新手机号。变更完成后立即生效，无需审批。"
+	)
+	public String applyPhoneChange(
+			@P(value = "投保人姓名，例如：张三")
+			String applicant,
+			@P(value = "保单号，例如：80001")
+			String policyNo,
+			@P(value = "新手机号，11位数字，例如：13800138001")
+			String newPhoneNo
+	) {
+		log.info("办理手机号变更: 申请人={}, 保单号={}, 新手机号={}", applicant, policyNo, newPhoneNo);
+		int acceptNo = operateService.addPhoneChangePos(applicant, policyNo, newPhoneNo);
+		return String.format("手机号变更已受理并生效，受理号为#%d。您的保单%s手机号已更新为%s。", acceptNo, policyNo, newPhoneNo);
+	}
 }

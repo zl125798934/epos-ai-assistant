@@ -1,5 +1,6 @@
-package cn.zhang.eposaiassistant.service;
+package cn.zhang.eposaiassistant.config;
 
+import cn.zhang.eposaiassistant.data.Intent;
 import dev.langchain4j.model.chat.ChatModel;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;

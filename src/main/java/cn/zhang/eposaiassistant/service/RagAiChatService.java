@@ -1,19 +1,20 @@
 package cn.zhang.eposaiassistant.service;
 
-
 import dev.langchain4j.service.MemoryId;
 import dev.langchain4j.service.SystemMessage;
 import dev.langchain4j.service.UserMessage;
 import reactor.core.publisher.Flux;
 
 /**
- * AI 对话服务接口
- * 提供通用对话、流式对话能力
- * 具体 prompt 由实现类通过 @SystemMessage 指定
+ * RAG 知识问答专用 AI 对话服务
  */
-public interface AiChatService {
+public interface RagAiChatService extends AiChatService {
 
+	@Override
+	@SystemMessage(fromResource = "system-prompt-rag.txt")
 	String chat(String userMessage);
 
+	@Override
+	@SystemMessage(fromResource = "system-prompt-rag.txt")
 	Flux<String> chatStream(@MemoryId int memoryId, @UserMessage String userMessage);
 }

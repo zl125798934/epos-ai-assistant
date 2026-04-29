@@ -7,6 +7,7 @@
     <el-table :data="tableData" border style="width: 100%" v-loading="loading">
       <el-table-column prop="policyNo" label="保单号" width="120" />
       <el-table-column prop="applicant" label="投保人" width="100" />
+      <el-table-column prop="phoneNo" label="手机号" width="120" />
       <el-table-column prop="purchaseDate" label="投保日期" width="120" />
       <el-table-column label="保单状态" width="120">
         <template #default="{ row }">

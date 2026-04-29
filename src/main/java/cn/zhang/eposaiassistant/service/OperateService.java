@@ -89,6 +89,34 @@ public class OperateService {
 	}
 
 	/**
+	 * 修改保单手机号
+	 * @param policyNo
+	 * @param phoneNo
+	 */
+	public void updatePolicyPhoneNo(String policyNo, String phoneNo) {
+		Policy policy = getPolicy(policyNo);
+		if (policy != null) {
+			policy.setPhoneNo(phoneNo);
+		}
+	}
+
+	/**
+	 * 添加手机号变更保全（无需审批，直接成功）
+	 * @param applicant
+	 * @param policyNo
+	 * @param newPhoneNo
+	 * @return
+	 */
+	public int addPhoneChangePos(String applicant, String policyNo, String newPhoneNo) {
+		int acceptNo = addPos(applicant, policyNo, PosTypeEnum.PHONE_CHANGE.getDescription());
+		// 手机号变更无需审批，直接变更为处理成功
+		updatePostStatus(acceptNo, PosStatusEnum.SUCCESS.getDescription());
+		// 同步更新保单手机号
+		updatePolicyPhoneNo(policyNo, newPhoneNo);
+		return acceptNo;
+	}
+
+	/**
 	 * 根据保单号或受理单号查询保全记录
 	 * @param policyNo
 	 * @param acceptNo
@@ -107,11 +135,13 @@ public class OperateService {
 	@PostConstruct
 	private void initData() {
 		List<String> applicant = List.of("张三", "李四", "王五");
+		List<String> phoneNos = List.of("13800138000", "13900139000", "13700137000");
 
 		for (int i = 0; i < 3; i++) {
 			Policy policy = new Policy();
 			policy.setPolicyNo(String.valueOf(80001+i));
 			policy.setApplicant(applicant.get(i % 3));
+			policy.setPhoneNo(phoneNos.get(i % 3));
 			policy.setPurchaseDate(LocalDate.now().minusDays(i));
 			policy.setPolicyStatus(PolicyStatusEnum.NORMAL.getDescription());
 			policyList.add(policy);

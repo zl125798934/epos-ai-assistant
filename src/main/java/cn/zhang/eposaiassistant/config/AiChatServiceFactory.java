@@ -1,9 +1,11 @@
 package cn.zhang.eposaiassistant.config;
 
 import cn.zhang.eposaiassistant.service.AiChatService;
+import cn.zhang.eposaiassistant.service.AgentAiChatService;
+import cn.zhang.eposaiassistant.service.ChatOnlyAiChatService;
 import cn.zhang.eposaiassistant.service.EposAiTool;
-import cn.zhang.eposaiassistant.service.Intent;
-import cn.zhang.eposaiassistant.service.IntentClassifier;
+import cn.zhang.eposaiassistant.service.RagAiChatService;
+import cn.zhang.eposaiassistant.data.Intent;
 import dev.langchain4j.memory.chat.MessageWindowChatMemory;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.chat.StreamingChatModel;
@@ -59,8 +61,8 @@ public class AiChatServiceFactory {
      * 知识问答专用：只启用 RAG，不注入 Tools
      */
     @Bean("ragChatService")
-    public AiChatService ragChatService() {
-        return AiServices.builder(AiChatService.class)
+    public RagAiChatService ragChatService() {
+        return AiServices.builder(RagAiChatService.class)
                 .chatModel(myQwenChatModel)
                 .streamingChatModel(qwenStreamingChatModel)
                 .chatMemoryProvider(memoryId ->
@@ -73,8 +75,8 @@ public class AiChatServiceFactory {
      * 操作办理专用：只启用 Tools，不执行 RAG
      */
     @Bean("agentChatService")
-    public AiChatService agentChatService() {
-        return AiServices.builder(AiChatService.class)
+    public AgentAiChatService agentChatService() {
+        return AiServices.builder(AgentAiChatService.class)
                 .chatModel(myQwenChatModel)
                 .streamingChatModel(qwenStreamingChatModel)
                 .chatMemoryProvider(memoryId ->
@@ -87,8 +89,8 @@ public class AiChatServiceFactory {
      * 闲聊专用：纯 LLM 对话，无 RAG 无 Tools
      */
     @Bean("chatOnlyService")
-    public AiChatService chatOnlyService() {
-        return AiServices.builder(AiChatService.class)
+    public ChatOnlyAiChatService chatOnlyService() {
+        return AiServices.builder(ChatOnlyAiChatService.class)
                 .chatModel(myQwenChatModel)
                 .streamingChatModel(qwenStreamingChatModel)
                 .chatMemoryProvider(memoryId ->
