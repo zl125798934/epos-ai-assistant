@@ -5,16 +5,19 @@ import jakarta.annotation.Resource;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
+/**
+ * 应用上下文启动测试。
+ */
 @SpringBootTest
 class EposAiAssistantApplicationTests {
 
-	@Resource
-	AiChatService aiChatService;
+  @Resource
+  private AiChatService aiChatService;
 
-	@Test
-	void chat() {
-		String content = aiChatService.chat("什么是保全？");
-    	System.out.println(content);
-	}
+  @Test
+  void chat() {
+    String content = aiChatService.chat("什么是保全？");
+    System.out.println(content);
+  }
 
 }

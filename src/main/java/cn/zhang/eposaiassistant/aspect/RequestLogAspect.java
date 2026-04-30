@@ -12,36 +12,48 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 
+/**
+ * 请求日志切面。
+ *
+ * <p>记录 Controller 层请求的入参、耗时等信息。</p>
+ */
 @Slf4j
 @Aspect
 @Component
 public class RequestLogAspect {
 
-    @Pointcut("execution(* cn.zhang.eposaiassistant.controller..*(..))")
-    public void controllerPointcut() {
-    }
+  @Pointcut("execution(* cn.zhang.eposaiassistant.controller..*(..))")
+  public void controllerPointcut() {
+  }
 
-    @Around("controllerPointcut()")
-    public Object logRequest(ProceedingJoinPoint joinPoint) throws Throwable {
-        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-        HttpServletRequest request = attributes.getRequest();
+  /**
+   * 环绕通知：记录请求开始与结束日志。
+   *
+   * @param joinPoint 连接点
+   * @return 原方法返回值
+   * @throws Throwable 调用过程中抛出的异常
+   */
+  @Around("controllerPointcut()")
+  public Object logRequest(final ProceedingJoinPoint joinPoint) throws Throwable {
+    ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+    HttpServletRequest request = attributes.getRequest();
 
-        String method = request.getMethod();
-        String uri = request.getRequestURI();
-        String ip = request.getRemoteAddr();
-        String className = joinPoint.getSignature().getDeclaringTypeName();
-        String methodName = joinPoint.getSignature().getName();
-        Object[] args = joinPoint.getArgs();
+    String method = request.getMethod();
+    String uri = request.getRequestURI();
+    String ip = request.getRemoteAddr();
+    String className = joinPoint.getSignature().getDeclaringTypeName();
+    String methodName = joinPoint.getSignature().getName();
+    Object[] args = joinPoint.getArgs();
 
-        log.info("请求开始 - Method: {}, URI: {}, IP: {}, Class: {}, Method: {}, Params: {}",
-                method, uri, ip, className, methodName, Arrays.toString(args));
+    log.info("请求开始 - Method: {}, URI: {}, IP: {}, Class: {}, Method: {}, Params: {}",
+        method, uri, ip, className, methodName, Arrays.toString(args));
 
-        long startTime = System.currentTimeMillis();
-        Object result = joinPoint.proceed(args);
-        long endTime = System.currentTimeMillis();
+    long startTime = System.currentTimeMillis();
+    Object result = joinPoint.proceed(args);
+    long endTime = System.currentTimeMillis();
 
-        log.info("请求结束 - Method: {}, URI: {}, 耗时：{}ms", method, uri, (endTime - startTime));
+    log.info("请求结束 - Method: {}, URI: {}, 耗时：{}ms", method, uri, (endTime - startTime));
 
-        return result;
-    }
+    return result;
+  }
 }

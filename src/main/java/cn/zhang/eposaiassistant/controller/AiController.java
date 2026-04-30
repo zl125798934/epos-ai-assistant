@@ -13,8 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 
 /**
- * AI 对话控制器
- * 支持意图识别 + 路由分发
+ * AI 对话控制器。
+ *
+ * <p>支持意图识别 + 路由分发。</p>
  */
 @Slf4j
 @CrossOrigin
@@ -22,28 +23,28 @@ import reactor.core.publisher.Flux;
 @RequestMapping("/api/ai")
 public class AiController {
 
-	@Resource
-	private AiChatServiceFactory aiChatServiceFactory;
+  @Resource
+  private AiChatServiceFactory aiChatServiceFactory;
 
-	/**
-	 * 聊天接口（带意图识别路由）
-	 * @param memoryId 会话记忆ID
-	 * @param message 用户消息
-	 * @return SSE 流式响应
-	 */
-	@GetMapping("/chat")
-	public Flux<ServerSentEvent<String>> chat(int memoryId, String message) {
-		
-		// 意图识别
-		AiChatService targetService = aiChatServiceFactory.getTargetAiService(message);
+  /**
+   * 聊天接口（带意图识别路由）。
+   *
+   * @param memoryId 会话记忆 ID
+   * @param message  用户消息
+   * @return SSE 流式响应
+   */
+  @GetMapping("/chat")
+  public Flux<ServerSentEvent<String>> chat(final int memoryId, final String message) {
+    // 意图识别
+    AiChatService targetService = aiChatServiceFactory.getTargetAiService(message);
 
-		return targetService.chatStream(memoryId, message)
-						.map(chunk -> ServerSentEvent.<String>builder()
-						.data(chunk)
-						.build())
-						.concatWith(Flux.just(ServerSentEvent.<String>builder()
-						.data("[DONE]")
-						.build()));
-	}
+    return targetService.chatStream(memoryId, message)
+        .map(chunk -> ServerSentEvent.<String>builder()
+            .data(chunk)
+            .build())
+        .concatWith(Flux.just(ServerSentEvent.<String>builder()
+            .data("[DONE]")
+            .build()));
+  }
 
 }

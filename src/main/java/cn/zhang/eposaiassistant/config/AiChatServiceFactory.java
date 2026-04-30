@@ -17,109 +17,122 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
+/**
+ * AI 对话服务工厂配置类。
+ *
+ * <p>负责构建并管理各类 AI 对话服务的 Spring Bean 实例，同时提供基于意图识别的服务路由能力。</p>
+ */
 @Slf4j
 @Configuration
 public class AiChatServiceFactory {
 
-    @Resource
-    private ChatModel myQwenChatModel;
+  @Resource
+  private ChatModel myQwenChatModel;
 
-    @Resource
-    private StreamingChatModel qwenStreamingChatModel;
+  @Resource
+  private StreamingChatModel qwenStreamingChatModel;
 
-    @Resource
-    private ContentRetriever contentRetriever;
+  @Resource
+  private ContentRetriever contentRetriever;
 
-    @Resource
-    private EposAiTool eposAiTool;
+  @Resource
+  private EposAiTool eposAiTool;
 
-    @Resource
-    private IntentClassifier intentClassifier;
+  @Resource
+  private IntentClassifier intentClassifier;
 
-    /**
-     * 会话记忆条数
-     */
-    private static final int CHAT_MEMORY_COUNT = 10;
+  /**
+   * 会话记忆条数。
+   */
+  private static final int CHAT_MEMORY_COUNT = 10;
 
-    /**
-     * 通用配置：同时启用 RAG + Tool（兼容旧逻辑，保留备用）
-     */
-    @Primary
-    @Bean
-    public AiChatService aiService() {
-        return AiServices.builder(AiChatService.class)
-                .chatModel(myQwenChatModel)
-                .streamingChatModel(qwenStreamingChatModel)
-                .chatMemoryProvider(memoryId ->
-                        MessageWindowChatMemory.withMaxMessages(CHAT_MEMORY_COUNT))
-                .contentRetriever(contentRetriever)
-                .tools(eposAiTool)
-                .build();
+  /**
+   * 通用配置：同时启用 RAG + Tool（兼容旧逻辑，保留备用）。
+   *
+   * @return AI 对话服务
+   */
+  @Primary
+  @Bean
+  public AiChatService aiService() {
+    return AiServices.builder(AiChatService.class)
+        .chatModel(myQwenChatModel)
+        .streamingChatModel(qwenStreamingChatModel)
+        .chatMemoryProvider(memoryId ->
+            MessageWindowChatMemory.withMaxMessages(CHAT_MEMORY_COUNT))
+        .contentRetriever(contentRetriever)
+        .tools(eposAiTool)
+        .build();
+  }
+
+  /**
+   * 知识问答专用：只启用 RAG，不注入 Tools。
+   *
+   * @return RAG 对话服务
+   */
+  @Bean("ragChatService")
+  public RagAiChatService ragChatService() {
+    return AiServices.builder(RagAiChatService.class)
+        .chatModel(myQwenChatModel)
+        .streamingChatModel(qwenStreamingChatModel)
+        .chatMemoryProvider(memoryId ->
+            MessageWindowChatMemory.withMaxMessages(CHAT_MEMORY_COUNT))
+        .contentRetriever(contentRetriever)
+        .build();
+  }
+
+  /**
+   * 操作办理专用：只启用 Tools，不执行 RAG。
+   *
+   * @return Agent 对话服务
+   */
+  @Bean("agentChatService")
+  public AgentAiChatService agentChatService() {
+    return AiServices.builder(AgentAiChatService.class)
+        .chatModel(myQwenChatModel)
+        .streamingChatModel(qwenStreamingChatModel)
+        .chatMemoryProvider(memoryId ->
+            MessageWindowChatMemory.withMaxMessages(CHAT_MEMORY_COUNT))
+        .tools(eposAiTool)
+        .build();
+  }
+
+  /**
+   * 闲聊专用：纯 LLM 对话，无 RAG 无 Tools。
+   *
+   * @return 闲聊对话服务
+   */
+  @Bean("chatOnlyService")
+  public ChatOnlyAiChatService chatOnlyService() {
+    return AiServices.builder(ChatOnlyAiChatService.class)
+        .chatModel(myQwenChatModel)
+        .streamingChatModel(qwenStreamingChatModel)
+        .chatMemoryProvider(memoryId ->
+            MessageWindowChatMemory.withMaxMessages(CHAT_MEMORY_COUNT))
+        .build();
+  }
+
+  /**
+   * 根据意图识别，返回对应的 AiService。
+   *
+   * @param userMessage 用户消息
+   * @return 目标 AI 对话服务
+   */
+  public AiChatService getTargetAiService(final String userMessage) {
+    Intent intent = intentClassifier.classifyByLlm(userMessage);
+    log.info("用户意图识别结果: {}, 消息: {}", intent, userMessage);
+
+    // 兜底方案
+    if (intent == null) {
+      return aiService();
     }
 
-    /**
-     * 知识问答专用：只启用 RAG，不注入 Tools
-     */
-    @Bean("ragChatService")
-    public RagAiChatService ragChatService() {
-        return AiServices.builder(RagAiChatService.class)
-                .chatModel(myQwenChatModel)
-                .streamingChatModel(qwenStreamingChatModel)
-                .chatMemoryProvider(memoryId ->
-                        MessageWindowChatMemory.withMaxMessages(CHAT_MEMORY_COUNT))
-                .contentRetriever(contentRetriever)
-                .build();
-    }
-
-    /**
-     * 操作办理专用：只启用 Tools，不执行 RAG
-     */
-    @Bean("agentChatService")
-    public AgentAiChatService agentChatService() {
-        return AiServices.builder(AgentAiChatService.class)
-                .chatModel(myQwenChatModel)
-                .streamingChatModel(qwenStreamingChatModel)
-                .chatMemoryProvider(memoryId ->
-                        MessageWindowChatMemory.withMaxMessages(CHAT_MEMORY_COUNT))
-                .tools(eposAiTool)
-                .build();
-    }
-
-    /**
-     * 闲聊专用：纯 LLM 对话，无 RAG 无 Tools
-     */
-    @Bean("chatOnlyService")
-    public ChatOnlyAiChatService chatOnlyService() {
-        return AiServices.builder(ChatOnlyAiChatService.class)
-                .chatModel(myQwenChatModel)
-                .streamingChatModel(qwenStreamingChatModel)
-                .chatMemoryProvider(memoryId ->
-                        MessageWindowChatMemory.withMaxMessages(CHAT_MEMORY_COUNT))
-                .build();
-    }
-
-    /**
-     * 根据意图识别，返回对应的 AiService
-     *
-     * @param userMessage
-     * @return
-     */
-    public AiChatService getTargetAiService(String userMessage) {
-        Intent intent = intentClassifier.classifyByLlm(userMessage);
-        log.info("用户意图识别结果: {}, 消息: {}", intent, userMessage);
-
-        //兜底方案
-        if (intent == null){
-            return aiService();
-        }
-
-        AiChatService targetService =
-            switch (intent) {
-              case KNOWLEDGE -> ragChatService();
-              case OPERATION -> agentChatService();
-              case CHAT -> chatOnlyService();
-            };
-        return targetService;
-    }
+    AiChatService targetService =
+        switch (intent) {
+          case KNOWLEDGE -> ragChatService();
+          case OPERATION -> agentChatService();
+          case CHAT -> chatOnlyService();
+        };
+    return targetService;
+  }
 
 }
