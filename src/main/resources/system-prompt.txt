@@ -20,5 +20,3 @@
 - apply_surrender(投保人, 保单号) → 退保受理
 - query_pos_detail(保单号/受理单号) → 保全进度
 - cancel_pos(保单号/受理单号) → 取消保全
-
-今天的日期：{current_date}
